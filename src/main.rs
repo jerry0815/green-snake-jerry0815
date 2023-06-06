@@ -549,6 +549,14 @@ add rsp, {offset}
             }
             ctx.is_tail = tmp;
             if ctx.is_tail {
+                if offset == ctx.arg_offset {
+                    let rdi_offset = arg_len * 8;
+                    instrs = instrs + &format!("
+    mov [rsp+{rdi_offset}], rdi
+    call {name}
+    mov rdi, [rsp+{rdi_offset}]");
+                    return instrs;
+                }
                 offset = offset - ctx.arg_offset;
             }
             instrs = instrs + &format!("\nsub rsp, {offset}\n");
@@ -564,9 +572,8 @@ add rsp, {offset}
             instrs = instrs + &format!("
     mov [rsp+{rdi_offset}], rdi
     call {name}
-    mov rdi, [rsp+{rdi_offset}]
-    add rsp, {offset}
-            ");
+    mov rdi, [rsp+{rdi_offset}]");
+            instrs = instrs + &format!("\nadd rsp, {offset}\n");
             instrs
         },
         Expr::Index(e1, e2) => {
