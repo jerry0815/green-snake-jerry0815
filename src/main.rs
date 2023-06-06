@@ -530,9 +530,7 @@ add rsp, {offset}
                 instrs = instrs + &format!(";tail is true\n");
             }
             let thn_instrs = compile_to_instrs(thn, si, env, ctx);
-            if ctx.is_tail {
-                instrs = instrs + &format!(";tail is true then \n");
-            }
+            ctx.is_tail = cur_is_tail;
             let els_instrs = compile_to_instrs(els, si, env, ctx);
             if ctx.is_tail {
                 instrs = instrs + &format!(";tail is true else\n");
