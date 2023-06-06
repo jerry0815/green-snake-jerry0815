@@ -525,9 +525,14 @@ add rsp, {offset}
             let else_label = new_label(ctx.l, "ifelse");
             let cond_instrs = compile_to_instrs(cond, si, env, ctx);
             ctx.is_tail = cur_is_tail;
+            let mut instrs = String::new();
+            if ctx.is_tail {
+                instrs = instrs + &format!(";tail is true\n");
+            }
             let thn_instrs = compile_to_instrs(thn, si, env, ctx);
             let els_instrs = compile_to_instrs(els, si, env, ctx);
             format!("
+  {instrs}
   {cond_instrs}
   cmp rax, 1
   je {else_label}
