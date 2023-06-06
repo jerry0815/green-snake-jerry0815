@@ -1,0 +1,8 @@
+(fun (recur a b)
+  (if (= b 0)
+      a
+      (recur (add1 a) (sub1 b))
+  )
+)
+
+(recur 0 input)
