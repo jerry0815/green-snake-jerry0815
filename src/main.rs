@@ -672,7 +672,7 @@ fn compile_definition(d: &Definition, labels: &mut i32, fun_env: &mut HashMap<St
             is_def: true,
             arr_env: &mut HashMap::new(),
             is_tail: true,
-            arg_offset: 0,//(arg_len+1) * 8,
+            arg_offset: (arg_len+1) * 8,
             };
           let body_is = compile_to_instrs(body, 0, &mut body_env, &mut ctx);
           format!(
