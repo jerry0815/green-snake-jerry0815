@@ -1,0 +1,6 @@
+(let ((x (tuple 3 10 20 30)))
+    (block
+        (print (index x 1))
+        (+ (index x 1) (index x 2))
+    )
+)

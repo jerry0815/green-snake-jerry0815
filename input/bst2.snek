@@ -1,0 +1,36 @@
+(fun (node val l r)
+    (tuple 3 val l r)
+)
+
+(fun (search root val)
+    (if (= root nil)
+        false
+        (if (= val (index root 0))
+            true 
+            (if (< val (index root 0) )
+                (search (index root 1) val)
+                (search (index root 2) val)
+            )
+        )
+    )
+)
+
+(fun (insert root val)
+    (if (= root nil)
+        (node val nil nil)
+        (if (= val (index root 0))
+            root
+            (if (< val (index root 0))
+                (node (index root 0) (insert (index root 1) val) (index root 2))
+                (node (index root 0) (index root 1) (insert (index root 2) val))
+            )
+        )
+    )
+)
+
+(let ((root nil))
+    (block
+        (set! root (insert root 10))
+        (search root 10)
+    )
+)

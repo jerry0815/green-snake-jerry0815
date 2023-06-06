@@ -1,0 +1,4 @@
+(block
+    (print input)
+    (print (+ 5 10))
+)

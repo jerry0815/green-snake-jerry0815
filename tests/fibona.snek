@@ -1,0 +1,6 @@
+(fun (fibona num)
+  (if (<= num 1)
+      1
+      (+ (fibona (+ num -2)) (fibona (+ num -1)))))
+
+(fibona input)

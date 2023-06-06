@@ -1,0 +1,7 @@
+(let ((x (tuple 3 10 20 30)) (y 20))
+    (block
+        (print (index x 1))
+        (print (+ (index x 0) y))
+        (print (index y 0))
+    )
+)

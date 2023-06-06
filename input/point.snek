@@ -1,0 +1,19 @@
+(fun (point x y)
+  (tuple 2 x y)
+)
+
+(fun (add px py)
+    (tuple 
+        2
+        (+ (index px 0) (index py 0))
+        (+ (index px 1) (index py 1))
+    )
+)
+
+(let ((x (point 3 4)) (y (point 1 2)) (z (add x y)))
+    (block
+        (print x)
+        (print y)
+        (print z)
+    )
+)

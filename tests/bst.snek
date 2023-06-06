@@ -1,0 +1,31 @@
+(fun (node ele left right)
+    (tuple 3 ele left right)
+)
+
+(fun (insert bst ele)
+    (block
+        (if (= bst nil)
+            (node ele nil nil)
+            (if (> ele (index bst 0))
+                (node (index bst 0) (index bst 1) (insert (index bst 2) ele))
+                (if (< ele (index bst 0))
+                    (node (index bst 0) (insert (index bst 1) ele) (index bst 2))
+                    bst
+                )
+            )
+        )
+    )
+)
+
+
+(let ((root (node 5 nil nil)) (i 1))
+    (loop
+        (if (> i 10)
+            (break root)
+            (block
+                (set! root (insert root i))
+                (set! i (+ i 1))
+            )
+        )
+    )
+)
