@@ -58,6 +58,8 @@ struct CompilationContext<'a> {
     fun_env: &'a mut HashMap<String, i32>,
     is_def: bool,
     arr_env: &'a mut HashMap<String, i32>,
+    is_tail: bool,
+    arg_offset: i32,
 }
 
 
@@ -473,6 +475,8 @@ add rsp, {offset}
                 fun_env: ctx.fun_env,
                 is_def: ctx.is_def,
                 arr_env: ctx.arr_env,
+                is_tail: ctx.is_tail,
+                arg_offset: ctx.arg_offset,
               };
             let e_is = compile_to_instrs(e, si, env, &mut new_ctx);
             format!("
@@ -530,35 +534,41 @@ add rsp, {offset}
   {end_label}:")
         }
         Expr::Call(name, args) => {
-          let mut instrs = String::new();
-          let arg_len = args.len() as i32;
-          if arg_len != *ctx.fun_env.get(name).expect(&format!("Invalid function not found {name}")) {
-              panic!("Invalid Wrong number of arguments expected {} got {}", ctx.fun_env.get(name).unwrap(), arg_len);
-          }
-          let offset = (arg_len+1) * 8;
-          for (i,arg) in args.iter().enumerate() {
-              let stack_offset = (si + i as i32) * 8;
-              let arg_is = compile_to_instrs(arg, si + i as i32, env, ctx);
-              instrs = instrs + "\n" + &arg_is + "\n" + &format!("mov [rsp+{stack_offset}], rax");
-          }
-          instrs = instrs + &format!("\nsub rsp, {offset}\n");
-          for i in 0..arg_len {
-              let origin = (si + i as i32) * 8 + offset;
-              let dest = i * 8;
-              instrs = instrs + &format!("
-  mov rbx, [rsp+{origin}]
-  mov [rsp+{dest}], rbx
-              ");
-          }
-          let rdi_offset = arg_len * 8;
-          instrs = instrs + &format!("
-  mov [rsp+{rdi_offset}], rdi
-  call {name}
-  mov rdi, [rsp+{rdi_offset}]
-  add rsp, {offset}
-          ");
-          instrs
-      },
+            let mut instrs = String::new();
+            let arg_len = args.len() as i32;
+            if arg_len != *ctx.fun_env.get(name).expect(&format!("Invalid function not found {name}")) {
+                panic!("Invalid Wrong number of arguments expected {} got {}", ctx.fun_env.get(name).unwrap(), arg_len);
+            }
+            let mut offset = (arg_len+1) * 8;
+            let tmp = ctx.is_tail;
+            ctx.is_tail = false;
+            for (i,arg) in args.iter().enumerate() {
+                let stack_offset = (si + i as i32) * 8;
+                let arg_is = compile_to_instrs(arg, si + i as i32, env, ctx);
+                instrs = instrs + "\n" + &arg_is + "\n" + &format!("mov [rsp+{stack_offset}], rax");
+            }
+            ctx.is_tail = tmp;
+            if ctx.is_tail {
+                offset = offset - ctx.arg_offset;
+            }
+            instrs = instrs + &format!("\nsub rsp, {offset}\n");
+            for i in 0..arg_len {
+                let origin = (si + i as i32) * 8 + offset;
+                let dest = i * 8;
+                instrs = instrs + &format!("
+    mov rbx, [rsp+{origin}]
+    mov [rsp+{dest}], rbx
+                ");
+            }
+            let rdi_offset = arg_len * 8;
+            instrs = instrs + &format!("
+    mov [rsp+{rdi_offset}], rdi
+    call {name}
+    mov rdi, [rsp+{rdi_offset}]
+    add rsp, {offset}
+            ");
+            instrs
+        },
         Expr::Index(e1, e2) => {
             let e1_instrs = compile_to_instrs(e1, si+1, env, ctx);
             let e2_instrs = compile_to_instrs(e2, si, env, ctx);
@@ -624,6 +634,8 @@ fn compile_program(p: &Program, fun_env: &mut HashMap<String, i32>) -> (String, 
     fun_env: fun_env,
     is_def: false,
     arr_env: &mut HashMap::new(),
+    is_tail: false,
+    arg_offset: 0,
   };
   let main = compile_to_instrs(&p.main, 0, &mut HashMap::new(), &mut ctx);
   let main_with_offset = format!("
@@ -642,6 +654,7 @@ fn compile_definition(d: &Definition, labels: &mut i32, fun_env: &mut HashMap<St
           let dep = depth(body);
           let offset = dep * 8;
           let mut body_env = hashmap! {};
+          let arg_len = args.len() as i32;
           for (i,arg) in args.iter().enumerate() {
               body_env.insert(arg.to_string(), dep + (i as i32) + 1);
           }
@@ -651,6 +664,8 @@ fn compile_definition(d: &Definition, labels: &mut i32, fun_env: &mut HashMap<St
             fun_env: fun_env,
             is_def: true,
             arr_env: &mut HashMap::new(),
+            is_tail: true,
+            arg_offset: (arg_len+1) * 8,
             };
           let body_is = compile_to_instrs(body, 0, &mut body_env, &mut ctx);
           format!(
