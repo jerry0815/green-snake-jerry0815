@@ -322,6 +322,8 @@ fn depth(e: &Expr) -> i32 {
 
 // fn compile_to_instrs(e: &Expr, si: i32, env: &HashMap<String, i32>, brake: &String, l: &mut i32, fun_env: &mut HashMap<String, i32>, is_def: bool) -> String  {
 fn compile_to_instrs(e: &Expr, si: i32, env: &HashMap<String, i32>, ctx: &mut CompilationContext) -> String {
+    let cur_is_tail = ctx.is_tail;
+    ctx.is_tail = false;
     match e {   
         Expr::Number(n) => {
             let base:i64 = 2;
@@ -540,14 +542,12 @@ add rsp, {offset}
                 panic!("Invalid Wrong number of arguments expected {} got {}", ctx.fun_env.get(name).unwrap(), arg_len);
             }
             let mut offset = (arg_len+1) * 8;
-            let tmp = ctx.is_tail;
-            ctx.is_tail = false;
             for (i,arg) in args.iter().enumerate() {
                 let stack_offset = (si + i as i32) * 8;
                 let arg_is = compile_to_instrs(arg, si + i as i32, env, ctx);
                 instrs = instrs + "\n" + &arg_is + "\n" + &format!("mov [rsp+{stack_offset}], rax");
             }
-            ctx.is_tail = tmp;
+            ctx.is_tail = cur_is_tail;
             if ctx.is_tail {
                 if offset == ctx.arg_offset {
                     let rdi_offset = arg_len * 8;
