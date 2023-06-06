@@ -1,8 +1,8 @@
-(fun (recur a b)
+(fun (recur a b c d e)
   (if (= b 0)
       a
-      (recur (add1 a) (sub1 b))
+      (recur (add1 a) (sub1 b) c d e)
   )
 )
 
-(recur 0 input)
+(recur 0 input 0 0 0)

@@ -1,0 +1,10 @@
+(fun (add1fun a b)
+  (if (= b 0)
+      a
+      (sub1fun (add1 a) b)
+  )
+)
+(fun (sub1fun a b)
+  (add1fun a (sub1 b))
+)
+(add1fun 0 input)
