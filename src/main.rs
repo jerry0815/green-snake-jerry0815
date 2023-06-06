@@ -560,14 +560,14 @@ add rsp, {offset}
             }
             ctx.is_tail = cur_is_tail;
             if ctx.is_tail {
-                if offset == ctx.arg_offset {
-                    let rdi_offset = arg_len * 8;
-                    instrs = instrs + &format!("
-    mov [rsp+{rdi_offset}], rdi
-    call {name}
-    mov rdi, [rsp+{rdi_offset}]");
-                    return instrs;
-                }
+    //             if offset == ctx.arg_offset {
+    //                 let rdi_offset = arg_len * 8;
+    //                 instrs = instrs + &format!("
+    // mov [rsp+{rdi_offset}], rdi
+    // call {name}
+    // mov rdi, [rsp+{rdi_offset}]");
+    //                 return instrs;
+    //             }
                 offset = offset - ctx.arg_offset;
             }
             instrs = instrs + &format!("\nsub rsp, {offset}\n");
