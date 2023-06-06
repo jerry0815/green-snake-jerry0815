@@ -463,6 +463,7 @@ add rsp, {offset}
             if ctx.brake == "" {
                 panic!("break");
             }
+            ctx.is_tail = cur_is_tail;
             let e_is = compile_to_instrs(e, si, env, ctx);
             format!("
   {e_is}
@@ -523,6 +524,7 @@ add rsp, {offset}
             let end_label = new_label(ctx.l, "ifend");
             let else_label = new_label(ctx.l, "ifelse");
             let cond_instrs = compile_to_instrs(cond, si, env, ctx);
+            ctx.is_tail = cur_is_tail;
             let thn_instrs = compile_to_instrs(thn, si, env, ctx);
             let els_instrs = compile_to_instrs(els, si, env, ctx);
             format!("
